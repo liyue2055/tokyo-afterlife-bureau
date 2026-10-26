@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -32,6 +32,24 @@ import {
   type SpiritCase,
   type Category,
 } from "../lib/cases";
+import dynamic from "next/dynamic";
+const SpiritWorkshop = dynamic(
+  () =>
+    import("../components/spirit-workshop").then(
+      (module) => module.SpiritWorkshop,
+    ),
+  {
+    loading: () => (
+      <section
+        id="spirit-workshop"
+        className="workshop-loading"
+        aria-busy="true"
+      >
+        Opening the Spirit Workshop…
+      </section>
+    ),
+  },
+);
 type View = "lobby" | "archive" | "demo" | "folklore";
 const cats: { id: Category; label: string }[] = [
   { id: "umbrella", label: "Umbrella" },
@@ -262,6 +280,7 @@ export default function Bureau() {
     [saved, setSaved] = useState<SpiritCase[]>([]),
     [ready, setReady] = useState(false),
     [current, setCurrent] = useState<SpiritCase | null>(null),
+    [lastCase, setLastCase] = useState<SpiritCase | null>(null),
     [wizard, setWizard] = useState(false),
     [step, setStep] = useState(0),
     [category, setCategory] = useState<Category>("umbrella"),
@@ -284,6 +303,40 @@ export default function Bureau() {
     file = useRef<HTMLInputElement>(null),
     stage = useRef<HTMLDivElement>(null),
     music = useRef<HTMLAudioElement>(null);
+  const workshopCases = useMemo(() => {
+    const cases = [...(lastCase ? [lastCase] : []), ...saved, ...samples];
+    return [...new Map(cases.map((c) => [c.id, c])).values()];
+  }, [lastCase, saved]);
+  useEffect(() => {
+    const readView = () => {
+      setPlaying(false);
+      setClip(false);
+      const requested = new URL(window.location.href).searchParams.get("view");
+      if (["lobby", "archive", "demo", "folklore"].includes(requested || ""))
+        setView(requested as View);
+      else setView("lobby");
+    };
+    readView();
+    window.addEventListener("popstate", readView);
+    const jump = setTimeout(() => {
+      if (window.location.hash === "#spirit-workshop")
+        document
+          .getElementById("spirit-workshop")
+          ?.scrollIntoView({ block: "start" });
+    }, 150);
+    return () => {
+      window.removeEventListener("popstate", readView);
+      clearTimeout(jump);
+    };
+  }, []);
+  useEffect(() => {
+    const syncFullscreen = () => {
+      if (!document.fullscreenElement) setPresent(false);
+    };
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () =>
+      document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
   useEffect(() => {
     try {
       const raw = JSON.parse(
@@ -359,6 +412,11 @@ export default function Bureau() {
     }
   }, [view, present]);
   function nav(v: View) {
+    const url = new URL(window.location.href);
+    if (v === "lobby") url.searchParams.delete("view");
+    else url.searchParams.set("view", v);
+    url.hash = "";
+    window.history.pushState({}, "", url);
     setView(v);
     setPlaying(false);
     setClip(false);
@@ -467,6 +525,7 @@ export default function Bureau() {
       } else {
         c = makeSample(category, object.trim(), memory.trim(), photo);
       }
+      setLastCase(c);
       setWizard(false);
       openCase(c);
     } catch (e) {
@@ -878,7 +937,31 @@ export default function Bureau() {
                 <ArrowUpRight size={16} />
               </button>
             </div>
-            <div ref={stage} className={"demo-stage beat-" + beat}>
+            <div
+              ref={stage}
+              className={"demo-stage beat-" + beat}
+              tabIndex={0}
+              role="region"
+              aria-label="Four-scene presentation. Use left and right arrow keys to change scenes; Space to play or pause."
+              onKeyDown={(event) => {
+                if ((event.target as HTMLElement).tagName === "VIDEO") return;
+                if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  setClip(false);
+                  setPlaying(false);
+                  setBeat((b) =>
+                    Math.max(
+                      0,
+                      Math.min(3, b + (event.key === "ArrowRight" ? 1 : -1)),
+                    ),
+                  );
+                }
+                if (event.key === " " && event.target === event.currentTarget) {
+                  event.preventDefault();
+                  setPlaying((p) => !p);
+                }
+              }}
+            >
               <div className="demo-stage-top">
                 <span>TOKYO AFTERLIFE BUREAU</span>
                 <span>
@@ -1022,6 +1105,20 @@ export default function Bureau() {
                 </button>
               )}
             </div>
+            <div className="workshop-jump">
+              <a href="#spirit-workshop" className="text-button">
+                Explore the Spirit Workshop <ArrowRight size={16} />
+              </a>
+              <span>Presentation keys: ← → scenes · Space play / pause</span>
+            </div>
+            <SpiritWorkshop
+              cases={workshopCases}
+              onOpenCase={(c) => {
+                openCase(c);
+                setTab("chapter");
+              }}
+              onStart={start}
+            />
             <div className="explain-grid">
               <article>
                 <span className="eyebrow">THE PROBLEM</span>

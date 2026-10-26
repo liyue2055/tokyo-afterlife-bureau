@@ -8,7 +8,7 @@ A mobile-first web experience that turns a forgotten object and a personal memor
 
 The private hosted demo includes a Demo room with a narrated 34-second film, captions, an AI-generated umbrella animation, and an instrumental score. A four-scene interactive presentation and authored sample cases work without an AI key.
 
-For judging: open **Demo room**, play the short film, then choose **Try the sample case**. Open **Next chapter**, choose a promise, and show the saved case in **My case files**. Photo intake and live AI generation are a separate, clearly identified flow.
+For judging: open **Demo room**, play the short film, then explore **Spirit Workshop** and choose a sample or your latest generated case. The workshop labels samples and filed AI cases explicitly; replaying the machine does not make an AI request. Choose an action tray to open its next chapter. You can also choose **Try the sample case**. Open **Next chapter**, choose a promise, and show the saved case in **My case files**. Photo intake and live AI generation are a separate, clearly identified flow.
 
 ## Features
 
@@ -17,7 +17,8 @@ For judging: open **Demo room**, play the short film, then choose **Try the samp
 - Server-side, multimodal OpenRouter case generation with structured-output validation.
 - Fictional character name, personality, story and wish; curated category-specific care suggestions.
 - Device-local saved cases, promises, filters, removal, and PNG sharing/export.
-- Interactive presentation with opt-in device narration and music.
+- Interactive presentation with opt-in device narration and music, keyboard controls, and direct `?view=demo` links.
+- An Anatomy-powered Spirit Workshop: an isometric letterpress driven by actual sample or AI case data, with photo/memory/story stages and action trays.
 - Folklore context, sources, and transparent AI/sample labels.
 - Web-app manifest for home-screen use. The service worker caches static artwork only; this is not a full offline application.
 
@@ -57,7 +58,7 @@ node --experimental-strip-types --test tests/backend.test.mjs
 npm run build
 ```
 
-Backend tests exercise request origins, methods, missing-key behavior, malformed images, real streamed body limits, and validated mocked provider output. Browser QA covers mobile overflow, sample creation, saving, persistence, promises, presentation navigation, and film playback. Live provider checks are separate from offline tests.
+The build regenerates workshop geometry using the vendored Anatomy kit. To regenerate just that illustration, run `npm run art:workshop`. Backend tests exercise request origins, methods, missing-key behavior, malformed images, real streamed body limits, and validated mocked provider output. Browser QA covers mobile overflow, sample creation, saving, persistence, promises, presentation navigation, and film playback. Live provider checks are separate from offline tests.
 
 ## Architecture and privacy
 
@@ -66,3 +67,11 @@ Vinext/React + TypeScript, Cloudflare Worker API, OpenRouter vision/text, and br
 Spirits and stories are invented; portraits are illustrated archetypes, not personalized generated images. Suggestions are general, not repair instructions. Electrical items need professional assessment. Promises measure user intent, not actual waste reduction.
 
 Source code: MIT. Third-party dependencies retain their own licenses. Generated media has separate provider terms; see the rights record. Historical inspiration: [National Diet Library Gallery](https://ndlsearch.ndl.go.jp/en/gallery).
+
+## Open-source tools
+
+![Interactive Anatomy-powered Spirit Workshop](docs/screenshots/spirit-workshop.png)
+
+The interactive Spirit Workshop uses a pinned subset of [Anatomy](https://github.com/wheresryan22/anatomy), MIT © 2026 Ryan; its licence and revision are retained in `vendor/anatomy/`. Geometry is precomputed at build time, so the upstream geometry generator does not ship in the browser. The machine is an explanatory metaphor, not a simulation of model internals.
+
+[PPT Master](https://github.com/hugohe3/ppt-master) was evaluated as an external workflow for a future editable PowerPoint, rather than a phone runtime dependency. [Open-source evaluation](docs/OPEN-SOURCE.md) and a [six-slide pitch outline](docs/PITCH-OUTLINE.md) are included. No PowerPoint export is claimed by this version.
