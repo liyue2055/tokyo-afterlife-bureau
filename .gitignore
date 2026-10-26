@@ -47,3 +47,6 @@ yarn-error.log*
 # Generated audio/video: private presentation deliverables, not open-source assets
 /public/media/
 .env.example
+
+# Generated GitHub Pages deployment output
+/dist-pages/

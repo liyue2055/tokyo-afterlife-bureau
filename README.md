@@ -6,6 +6,10 @@ A mobile-first web experience that turns a forgotten object and a personal memor
 
 ## Try it
 
+**[Open the public mobile demo](https://liyue2055.github.io/tokyo-afterlife-bureau/)** · **[Go straight to the Spirit Workshop](https://liyue2055.github.io/tokyo-afterlife-bureau/?view=demo#spirit-workshop)**
+
+GitHub Pages runs the sample experience entirely in the browser: photo intake, authored stories, case saving, promises, card export, workshop animation, and device narration. It makes no AI request and contains no provider keys. The private server-hosted version supports live AI generation and the separate media presentation.
+
 The private hosted demo includes a Demo room with a narrated 34-second film, captions, an AI-generated umbrella animation, and an instrumental score. A four-scene interactive presentation and authored sample cases work without an AI key.
 
 For judging: open **Demo room**, play the short film, then explore **Spirit Workshop** and choose a sample or your latest generated case. The workshop labels samples and filed AI cases explicitly; replaying the machine does not make an AI request. Choose an action tray to open its next chapter. You can also choose **Try the sample case**. Open **Next chapter**, choose a promise, and show the saved case in **My case files**. Photo intake and live AI generation are a separate, clearly identified flow.
@@ -75,3 +79,9 @@ Source code: MIT. Third-party dependencies retain their own licenses. Generated 
 The interactive Spirit Workshop uses a pinned subset of [Anatomy](https://github.com/wheresryan22/anatomy), MIT © 2026 Ryan; its licence and revision are retained in `vendor/anatomy/`. Geometry is precomputed at build time, so the upstream geometry generator does not ship in the browser. The machine is an explanatory metaphor, not a simulation of model internals.
 
 [PPT Master](https://github.com/hugohe3/ppt-master) was evaluated as an external workflow for a future editable PowerPoint, rather than a phone runtime dependency. [Open-source evaluation](docs/OPEN-SOURCE.md) and a [six-slide pitch outline](docs/PITCH-OUTLINE.md) are included. No PowerPoint export is claimed by this version.
+
+## GitHub Pages deployment
+
+`npm run build:pages` creates `dist-pages/` using the same React interface with static-only adapters. Public asset paths use the repository subpath. `npm run preview:pages` serves the production build locally. The Pages workflow builds and deploys on pushes to `main`; repository Pages settings use GitHub Actions. No deployment or model secrets are required in this workflow.
+
+The build copies an explicit artwork/manifest allowlist and creates an empty media manifest. Ignored private audio/video in `public/media/` is excluded. The existing Vinext/Worker build remains available through `npm run build`.

@@ -32,6 +32,7 @@ import {
   type SpiritCase,
   type Category,
 } from "../lib/cases";
+import { assetUrl, isStaticPreview } from "../lib/runtime";
 import dynamic from "next/dynamic";
 const SpiritWorkshop = dynamic(
   () =>
@@ -352,15 +353,17 @@ export default function Bureau() {
         );
     } catch {}
     setReady(true);
-    fetch("/api/status")
-      .then((r) => r.json())
-      .then((r) => setAi(!!(r as { aiAvailable?: boolean }).aiAvailable))
-      .catch(() => {});
-    fetch("/media/manifest.json")
+    if (!isStaticPreview) {
+      fetch("/api/status")
+        .then((r) => r.json())
+        .then((r) => setAi(!!(r as { aiAvailable?: boolean }).aiAvailable))
+        .catch(() => {});
+    }
+    fetch(assetUrl("/media/manifest.json"))
       .then((r) => (r.ok ? r.json() : null))
       .then(setMedia)
       .catch(() => {});
-    if ("serviceWorker" in navigator)
+    if (!isStaticPreview && "serviceWorker" in navigator)
       navigator.serviceWorker.register("/sw.js").catch(() => {});
   }, []);
   useEffect(() => {
@@ -667,6 +670,12 @@ export default function Bureau() {
           File an object <Plus size={16} />
         </button>
       </header>
+      {isStaticPreview && (
+        <div className="static-demo-note">
+          <span>PUBLIC DEMO</span> Explore sample spirits. Your photos stay on
+          your device.
+        </div>
+      )}
       <main className={present ? "presentation" : ""}>
         {view === "lobby" && (
           <>
@@ -688,7 +697,10 @@ export default function Bureau() {
                 </p>
                 <div className="hero-buttons">
                   <button className="primary" onClick={start}>
-                    Awaken an object <Sparkles size={18} />
+                    {isStaticPreview
+                      ? "Create a sample spirit"
+                      : "Awaken an object"}{" "}
+                    <Sparkles size={18} />
                   </button>
                   <button className="text-button" onClick={() => nav("demo")}>
                     <span className="play-circle">
@@ -705,7 +717,7 @@ export default function Bureau() {
               <div className="hero-art">
                 <span className="art-index">FIELD NOTES / 001</span>
                 <img
-                  src="/spirits.png"
+                  src={assetUrl("/spirits.png")}
                   alt="Hand-painted spirits: a one-eyed red umbrella, a sleepy green kettle, and a golden lamp"
                   fetchPriority="high"
                 />
@@ -971,15 +983,15 @@ export default function Bureau() {
               {clip ? (
                 <video
                   className="demo-video"
-                  src="/media/bureau-trailer.mp4"
+                  src={assetUrl("/media/bureau-trailer.mp4")}
                   controls
                   autoPlay
                   playsInline
-                  poster="/spirits.png"
+                  poster={assetUrl("/spirits.png")}
                 >
                   <track
                     kind="captions"
-                    src="/media/bureau-trailer.vtt"
+                    src={assetUrl("/media/bureau-trailer.vtt")}
                     srcLang="en"
                     label="English"
                     default
@@ -993,8 +1005,8 @@ export default function Bureau() {
                       media?.assets?.some((a: any) => a.kind === "video") ? (
                         <video
                           className="spirit-clip"
-                          src="/media/umbrella-awakening.mp4"
-                          poster="/media/umbrella-poster.jpg"
+                          src={assetUrl("/media/umbrella-awakening.mp4")}
+                          poster={assetUrl("/media/umbrella-poster.jpg")}
                           autoPlay
                           loop
                           muted
@@ -1081,7 +1093,7 @@ export default function Bureau() {
               {media?.assets?.some((a: any) => a.kind === "music") && (
                 <audio
                   ref={music}
-                  src="/media/bureau-score.mp3"
+                  src={assetUrl("/media/bureau-score.mp3")}
                   loop
                   preload="none"
                 />
@@ -1154,12 +1166,26 @@ export default function Bureau() {
                 <h3>What’s real. What’s imagined.</h3>
               </div>
               <p>
-                The stories and characters are fiction inspired by folklore. The
-                hero artwork is AI-generated. The short film combines animated
-                artwork, a Duomi-generated Grok video, ElevenLabs narration, and
-                generated music. Live case generation is{" "}
-                {ai ? "connected" : "not connected yet"}; sample cases work
-                without a key. Browser narration depends on your device.
+                {isStaticPreview ? (
+                  <>
+                    These characters are original fiction inspired by folklore.
+                    This public demo uses authored sample stories and
+                    illustrated portraits. Photos and memories stay on your
+                    device. The interactive workshop, saved cases, and card
+                    export work here; live AI story generation runs in the
+                    server-hosted version. Browser narration depends on your
+                    device.
+                  </>
+                ) : (
+                  <>
+                    The stories and characters are fiction inspired by folklore.
+                    The hero artwork is AI-generated. The short film combines
+                    animated artwork, a Duomi-generated Grok video, ElevenLabs
+                    narration, and generated music. Live case generation is{" "}
+                    {ai ? "connected" : "not connected yet"}; sample cases work
+                    without a key. Browser narration depends on your device.
+                  </>
+                )}
               </p>
             </div>
           </section>
@@ -1388,7 +1414,9 @@ export default function Bureau() {
                     <p>
                       {ai
                         ? "Live AI is connected. Creating a spirit sends this photo and memory to our AI provider. Cases stay on this device unless you export them."
-                        : "You’re in sample mode. Your object will receive an authored sample story for its category. Live AI is not connected yet."}
+                        : isStaticPreview
+                          ? "This public demo gives your object an authored sample story. Photos and memories stay on your device; no AI request is made."
+                          : "You’re in sample mode. Your object will receive an authored sample story for its category. Live AI is not connected yet."}
                     </p>
                   </div>
                   <button
