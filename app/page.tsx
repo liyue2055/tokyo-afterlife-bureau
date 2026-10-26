@@ -1217,6 +1217,7 @@ export default function Bureau() {
                   </button>
                   <input
                     ref={file}
+                    key="object-photo"
                     type="file"
                     accept="image/*"
                     className="sr-only"
@@ -1266,6 +1267,7 @@ export default function Bureau() {
                     What do you call it?
                   </label>
                   <input
+                    key="object-name"
                     id="object-name"
                     value={object}
                     maxLength={70}

@@ -1853,3 +1853,4 @@ footer > span:nth-child(2) {
   object-fit: cover;
   border-radius: 50%;
 }
+@media (max-width: 650px) { .intake h2 em { margin-left: .18em; } }
